@@ -1,2 +1,2 @@
-# Library / book manager
-
+# Vanilla Ruby Workshop
+## Library / book manager module
