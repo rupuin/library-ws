@@ -12,18 +12,19 @@ books_from_csv = Book::Parser.from_csv('books.csv')
 book_repo.save_all(books_from_csv)
 
 library = Library::Service.new(user_repository: user_repo, book_repository: book_repo)
+auth = Authenticator::Service.new(user_repository: user_repo)
 
 authenticated = false
 current_user = nil
 
 loop do
-  puts "Welcome to the Library\n"
+  puts 'Welcome to the Library'
 
   until authenticated
-    print 'Enter your username: '
+    print "\nEnter your username: "
     username = gets.chomp
 
-    if !user_repo.exists?(username)
+    if !auth.user_exists?(username: username)
       puts "User '#{username}' not found. Do you want to register?"
       puts "1. Yes\n2. No"
 
@@ -32,32 +33,29 @@ loop do
 
       case register_choice
       when 1
-        puts
-        print "Enter new password for '#{username}': "
+        print 'Create new password: '
         new_password1 = gets.chomp
-        print 'Repeat the password: '
+
+        print 'Repeat your password: '
         new_password2 = gets.chomp
-        puts
-        if new_password1 == new_password2
-          new_user = User::User.new(username: username, password: new_password2)
-          user_repo.save(new_user)
-          puts "User '#{new_user.username}' was successfully created!\n"
-          current_user = user_repo.find_by_username(username)
-          authenticated = true
+
+        if auth.passwords_match?(password1: new_password1, password2: new_password2) # rubocop:disable Metrics/BlockNesting
+          current_user = auth.signup(username: username, password: new_password2)
+          if current_user # rubocop:disable Metrics/BlockNesting
+            puts "User '#{current_user.username}' was successfully created!\n"
+            authenticated = true
+          end
         end
       when 2
         next
       end
     else
-      current_user = user_repo.find_by_username(username)
-      print "Enter password for '#{current_user.username}': "
+      print "Enter password for '#{username}': "
       entered_password = gets.chomp
-      if current_user.password == entered_password
-        authenticated = true
-      else
-        puts 'Incorrect password. Try again.'
-        puts
-      end
+      current_user = auth.login(username: username, password: entered_password)
+      authenticated = true if current_user
+      puts 'Incorrect password. Try again.'
+      puts
     end
   end
 
