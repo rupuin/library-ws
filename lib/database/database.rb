@@ -21,6 +21,8 @@ module Database # rubocop:disable Style/Documentation
       enable_foreign_keys(db)
       create_user_table(db)
       create_book_table(db)
+      create_user_index_on_username(db)
+      create_book_index_on_title(db)
       db
     end
 
@@ -40,6 +42,13 @@ module Database # rubocop:disable Style/Documentation
       SQL
     end
 
+    def create_user_index_on_username(db)
+      db.execute <<-SQL
+      CREATE INDEX IF NOT EXISTS index_user_on_username
+      ON user (username);
+      SQL
+    end
+
     def create_book_table(db)
       db.execute <<-SQL
     CREATE TABLE IF NOT EXISTS book (
@@ -50,6 +59,13 @@ module Database # rubocop:disable Style/Documentation
     borrowed_by INTEGER,
     FOREIGN KEY (borrowed_by) REFERENCES user(id)
     );
+      SQL
+    end
+
+    def create_book_index_on_title(db)
+      db.execute <<-SQL
+        CREATE INDEX IF NOT EXISTS index_book_on_title
+        ON book (title);
       SQL
     end
   end
