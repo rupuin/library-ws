@@ -90,7 +90,8 @@ loop do
     end
   when 3
     begin
-      puts "CURR USER #{current_user}"
+      puts '---- 3. Return a book ----'
+      puts
       puts library.return_book(book_id: current_user.borrowed_book, user_id: current_user.id)
     rescue StandardError => e
       puts "Return failed: #{e.message}"
